@@ -1,0 +1,77 @@
+{
+	"common": {
+		"name": "sma-sview",
+		"version": "0.0.1",
+		"news": {
+			"0.0.1": {
+				"en": "initial release",
+				"de": "Erstveröffentlichung",
+				"ru": "Начальная версия",
+				"pt": "lançamento inicial",
+				"nl": "Eerste uitgave",
+				"fr": "Première version",
+				"it": "Versione iniziale",
+				"es": "Versión inicial",
+				"pl": "Pierwsze wydanie",
+				"zh-cn": "首次出版"
+			}
+		},
+		"title": "SMA-SmartView",
+		"titleLang": {
+			"en": "SMA-SmartView",
+			"de": "SMA-SmartView",
+			"ru": "SMA-SmartView",
+			"pt": "SMA-SmartView",
+			"nl": "SMA-SmartView",
+			"fr": "SMA-SmartView",
+			"it": "SMA-SmartView",
+			"es": "SMA-SmartView",
+			"pl": "SMA-SmartView",
+			"zh-cn": "SMA-的SmartView"
+		},
+		"desc": {
+			"en": "SmartView Adapter",
+			"de": "SmartView-Adapter",
+			"ru": "Адаптер SmartView",
+			"pt": "Adaptador SmartView",
+			"nl": "SmartView-adapter",
+			"fr": "Adaptateur SmartView",
+			"it": "SmartView Adapter",
+			"es": "Adaptador SmartView",
+			"pl": "Adapter SmartView",
+			"zh-cn": "SmartView适配器"
+		},
+		"authors": [
+			"Volker Richter <v@vrmx.eu>"
+		],
+		"keywords": [
+			"sma smartview inverter"
+		],
+		"license": "MIT",
+		"platform": "Javascript/Node.js",
+		"main": "build/main.js",
+		"icon": "sma-sview.png",
+		"enabled": true,
+		"extIcon": "https://raw.githubusercontent.com/Volker Richter/ioBroker.sma-sview/master/admin/sma-sview.png",
+		"readme": "https://github.com/Volker Richter/ioBroker.sma-sview/blob/master/README.md",
+		"loglevel": "info",
+		"mode": "daemon",
+		"type": "protocols",
+		"compact": true,
+		"materialize": true,
+		"dependencies": [
+			{
+				"admin": ">=3.0.0"
+			},
+			{
+				"js-controller": ">=1.4.2"
+			}
+		]
+	},
+	"native": {
+		"option1": true,
+		"option2": "42"
+	},
+	"objects": [],
+	"instanceObjects": []
+}
