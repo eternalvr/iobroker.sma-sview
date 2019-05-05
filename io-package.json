@@ -1,7 +1,7 @@
 {
 	"common": {
 		"name": "sma-sview",
-		"version": "0.0.1",
+		"version": "0.0.3",
 		"news": {
 			"0.0.1": {
 				"en": "initial release",
@@ -52,8 +52,8 @@
 		"main": "build/main.js",
 		"icon": "sma-sview.png",
 		"enabled": true,
-		"extIcon": "https://raw.githubusercontent.com/Volker Richter/ioBroker.sma-sview/master/admin/sma-sview.png",
-		"readme": "https://github.com/Volker Richter/ioBroker.sma-sview/blob/master/README.md",
+		"extIcon": "https://raw.githubusercontent.com/eternalvr/ioBroker.sma-sview/master/admin/sma-sview.png",
+		"readme": "https://github.com/eternalvr/ioBroker.sma-sview/blob/master/README.md",
 		"loglevel": "info",
 		"mode": "daemon",
 		"type": "protocols",
@@ -69,8 +69,8 @@
 		]
 	},
 	"native": {
-		"option1": true,
-		"option2": "42"
+		"smartViewIP": "192.168.5.40",
+		"rescanInterval": "10000"
 	},
 	"objects": [],
 	"instanceObjects": []

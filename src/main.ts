@@ -5,6 +5,9 @@
 // The adapter-core module gives you access to the core ioBroker functions
 // you need to create an adapter
 import * as utils from "@iobroker/adapter-core";
+import * as request from "request";
+import {SMAObjects, D2PConst} from "./SMAObjects";
+import { isNumber } from "util";
 
 // Load your modules here, e.g.:
 // import * as fs from "fs";
@@ -15,8 +18,8 @@ declare global {
 	namespace ioBroker {
 		interface AdapterConfig {
 			// Define the shape of your options here (recommended)
-			option1: boolean;
-			option2: string;
+			smartViewIP: string;
+			rescanInterval: number;
 			// Or use a catch-all approach
 			[key: string]: any;
 		}
@@ -31,8 +34,8 @@ class SmaSview extends utils.Adapter {
 			name: "sma-sview",
 		});
 		this.on("ready", this.onReady.bind(this));
-		this.on("objectChange", this.onObjectChange.bind(this));
-		this.on("stateChange", this.onStateChange.bind(this));
+	//	this.on("objectChange", this.onObjectChange.bind(this));
+	//	this.on("stateChange", this.onStateChange.bind(this));
 		// this.on("message", this.onMessage.bind(this));
 		this.on("unload", this.onUnload.bind(this));
 	}
@@ -45,50 +48,110 @@ class SmaSview extends utils.Adapter {
 
 		// The adapters config (in the instance object everything under the attribute "native") is accessible via
 		// this.config:
-		this.log.info("config option1: " + this.config.option1);
-		this.log.info("config option2: " + this.config.option2);
+		this.log.info("Inverter IP: " + this.config.smartViewIP);
+		this.log.info("Rescan Interval: " + this.config.rescanInterval);
 
-		/*
-		For every state in the system there has to be also an object of type state
-		Here a simple template for a boolean variable named "testVariable"
-		Because every adapter instance uses its own unique namespace variable names can't collide with other adapters variables
-		*/
-		await this.setObjectAsync("testVariable", {
-			type: "state",
-			common: {
-				name: "testVariable",
-				type: "boolean",
-				role: "indicator",
-				read: true,
-				write: true,
-			},
-			native: {},
-		});
+		
 
-		// in this template all states changes inside the adapters namespace are subscribed
-		this.subscribeStates("*");
-
-		/*
-		setState examples
-		you will notice that each setState will cause the stateChange event to fire (because of above subscribeStates cmd)
-		*/
-		// the variable testVariable is set to true as command (ack=false)
-		await this.setStateAsync("testVariable", true);
-
-		// same thing, but the value is flagged "ack"
-		// ack should be always set to true if the value is received from or acknowledged from the target system
-		await this.setStateAsync("testVariable", { val: true, ack: true });
-
-		// same thing, but the state is deleted after 30s (getState will return null afterwards)
-		await this.setStateAsync("testVariable", { val: true, ack: true, expire: 30 });
-
-		// examples for the checkPassword/checkGroup functions
-		let result = await this.checkPasswordAsync("admin", "iobroker");
-		this.log.info("check user admin pw ioboker: " + result);
-
-		result = await this.checkGroupAsync("admin", "admin");
-		this.log.info("check group user admin group admin: " + result);
+		
+		this.requestJSONFromInverter();
+		
 	}
+	private requestJSONFromInverter(){
+		process.env['NODE_TLS_REJECT_UNAUTHORIZED'] = "0";
+		 
+		request("https://" + this.config.smartViewIP + "/dyn/getDashValues.json", { method: 'POST', formData: {destDev: [], keys: []}}, (error: any, response: request.Response, body: any) => {
+				if(error) {
+					this.log.error(error);
+					return;
+				}
+				this.log.debug("Status: " + response.statusCode);
+				if(response.statusCode == 200){
+					let obj = JSON.parse(body);
+					
+					if(!obj) {
+						this.log.error("Parsing JSON failed: " + body);
+
+						return;
+					}
+					if(obj.result) {
+						for(let t in obj.result) {
+							this.log.debug("First Key: " + t);
+
+							const states = this.parseResult(obj.result[t]);
+							this.createStates(states, () => {
+								setTimeout(() => { this.requestJSONFromInverter(); }, this.config.rescanInterval);
+							});
+						}
+					} else {
+						this.log.error("Result Object not found in : " + JSON.stringify(obj));
+
+						return;
+					}
+				}
+
+				
+		});
+}
+createStates(states: any, callback: Function) {
+	if(!states || states.length == 0){
+		this.log.warn("States Array is empty.");
+		return;
+	}
+
+	for(let t in states) {
+		this.log.debug("Setting state " + t + " to " + states[t]);
+		let typ = (isNumber(states[t])) ? "value" : "string";
+		this.getObjectAsync(t).then(() => {
+			this.setState(t, states[t], true);
+		}).catch((reason:any) => {
+			this.setObjectAsync(t, {
+				type: "state",
+				common: {
+					name: t,
+					type: "string",
+					role: typ,
+					read: true,
+					write: false,
+					
+				},
+				
+				native: {},
+			}).then(()=>{
+				this.setState(t, states[t], true);
+			});
+		});
+	}
+	callback();
+}
+parseResult(obj: any) : any {
+	let states : any= {}; 
+	for ( var l in obj) {
+		if(SMAObjects.OBJECTS[l]) {
+			for( var o in obj[l]["1"]){
+				if(obj[l]["1"][o].val){
+					states[SMAObjects.OBJECTS[l]] = obj[l]["1"][o].val;
+
+					// if is an array with a tag
+					if(!states[SMAObjects.OBJECTS[l]].length) 
+						continue;
+
+					const tag = states[SMAObjects.OBJECTS[l]][0].tag;
+					if( tag ) {
+						if( D2PConst[tag]) {
+							states[SMAObjects.OBJECTS[l]] = D2PConst[tag].toString();
+						}
+					}
+					
+				}
+				
+			}
+			
+		}
+	}
+
+	return states;
+}
 
 	/**
 	 * Is called when adapter shuts down - callback has to be called under any circumstances!
@@ -102,32 +165,7 @@ class SmaSview extends utils.Adapter {
 		}
 	}
 
-	/**
-	 * Is called if a subscribed object changes
-	 */
-	private onObjectChange(id: string, obj: ioBroker.Object | null | undefined) {
-		if (obj) {
-			// The object was changed
-			this.log.info(`object ${id} changed: ${JSON.stringify(obj)}`);
-		} else {
-			// The object was deleted
-			this.log.info(`object ${id} deleted`);
-		}
-	}
-
-	/**
-	 * Is called if a subscribed state changes
-	 */
-	private onStateChange(id: string, state: ioBroker.State | null | undefined) {
-		if (state) {
-			// The state was changed
-			this.log.info(`state ${id} changed: ${state.val} (ack = ${state.ack})`);
-		} else {
-			// The state was deleted
-			this.log.info(`state ${id} deleted`);
-		}
-	}
-
+	
 	// /**
 	//  * Some message was sent to this instance over message box. Used by email, pushover, text2speech, ...
 	//  * Using this method requires "common.message" property to be set to true in io-package.json

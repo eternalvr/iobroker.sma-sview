@@ -6,14 +6,14 @@
     "name": "Volker Richter",
     "email": "v@vrmx.eu"
   },
-  "homepage": "https://github.com/Volker Richter/ioBroker.sma-sview",
+  "homepage": "https://github.com/eternalvr/iobroker.sma-sview",
   "license": "MIT",
   "keywords": [
     "sma smartview inverter"
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/Volker Richter/ioBroker.sma-sview"
+    "url": "https://github.com/eternalvr/iobroker.sma-sview"
   },
   "dependencies": {
     "@iobroker/adapter-core": "^1.0.3"
@@ -58,7 +58,7 @@
     "lint:ts": "tslint"
   },
   "bugs": {
-    "url": "https://github.com/Volker Richter/ioBroker.sma-sview/issues"
+    "url": "https://github.com/eternalvr/iobroker.sma-sview/issues"
   },
   "readmeFilename": "README.md"
 }
