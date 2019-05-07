@@ -145,7 +145,7 @@ class SmaSview extends utils.Adapter {
                         for (let t in obj.result) {
                             _self.log.debug("First Key: " + t);
                             const states = this.parseResult(obj.result[t]);
-                            this.createStates(states, () => {
+                            _self.createStates(states, () => {
                                 setTimeout(() => { _self.requestJSONFromInverter(jsonFile, schema, sid); }, _self.config.rescanInterval);
                                 resolve({});
                             });
@@ -169,21 +169,26 @@ class SmaSview extends utils.Adapter {
             _self.log.debug("Setting state " + t + " to " + states[t]);
             let typ = (util_1.isNumber(states[t])) ? "value" : "string";
             _self.getObjectAsync(t).then((g) => {
-                _self.setState(t, states[t], true);
-            }).catch((reason) => {
-                _self.setObjectAsync(t, {
-                    type: "state",
-                    common: {
-                        name: t,
-                        type: "string",
-                        role: typ,
-                        read: true,
-                        write: false,
-                    },
-                    native: {},
-                }).then(() => {
+                if (!g) {
+                    _self.setObjectAsync(t, {
+                        type: "state",
+                        common: {
+                            name: t,
+                            type: "string",
+                            role: typ,
+                            read: true,
+                            write: false,
+                        },
+                        native: {},
+                    }).then(() => {
+                        _self.setState(t, states[t], true);
+                    });
+                }
+                else {
                     _self.setState(t, states[t], true);
-                });
+                }
+            }).catch((reason) => {
+                _self.log.warn("Could not set state: " + reason);
             });
         }
         callback();

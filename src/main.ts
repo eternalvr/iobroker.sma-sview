@@ -186,7 +186,7 @@ class SmaSview extends utils.Adapter {
 							_self.log.debug("First Key: " + t);
 
 							const states = this.parseResult(obj.result[t]);
-							this.createStates(states, () => {
+							_self.createStates(states, () => {
 								setTimeout(() => { _self.requestJSONFromInverter(jsonFile, schema, sid); }, _self.config.rescanInterval);
 								resolve({});
 							});
@@ -212,23 +212,29 @@ createStates(states: any, callback: Function) {
 		_self.log.debug("Setting state " + t + " to " + states[t]);
 		let typ = (isNumber(states[t])) ? "value" : "string";
 		_self.getObjectAsync(t).then((g:any) => {
-			_self.setState(t, states[t], true);
-		}).catch((reason:any) => {
-			_self.setObjectAsync(t, {
-				type: "state",
-				common: {
-					name: t,
-					type: "string",
-					role: typ,
-					read: true,
-					write: false,
+
+			if(!g) {
+				_self.setObjectAsync(t, {
+					type: "state",
+					common: {
+						name: t,
+						type: "string",
+						role: typ,
+						read: true,
+						write: false,
+						
+					},
 					
-				},
-				
-				native: {},
-			}).then(()=>{
+					native: {},
+				}).then(()=>{
+					_self.setState(t, states[t], true);
+				});
+			} else {
 				_self.setState(t, states[t], true);
-			});
+			}
+			
+		}).catch((reason:any) => {
+			_self.log.warn("Could not set state: " + reason);
 		});
 	}
 	callback();
