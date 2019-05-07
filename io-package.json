@@ -69,8 +69,12 @@
 		]
 	},
 	"native": {
-		"smartViewIP": "192.168.5.40",
-		"rescanInterval": "10000"
+		"inverterIP": "192.168.5.40",
+		"rescanInterval": "10000",
+		"smartViewEnabled": true,
+		"loginNeeded": true,
+		"loginUser": "usr",
+		"loginPassword" : ""
 	},
 	"objects": [],
 	"instanceObjects": []
