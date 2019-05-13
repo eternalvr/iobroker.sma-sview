@@ -246,15 +246,17 @@ parseResult(obj: any) : any {
 		if(SMAObjects.OBJECTS[l]) {
 			for(var x in obj[l]){
 			for( var o in obj[l][x]){
-				if(obj[l][x][o].val){
+				if(obj[l][x][o].hasOwnProperty("val")){
 					states[SMAObjects.OBJECTS[l]] = obj[l][x][o].val;
-
+					if(states[SMAObjects.OBJECTS[l]] === null) {
+						states[SMAObjects.OBJECTS[l]] = 0;
+					}
 					// if is an array with a tag
 					if(!states[SMAObjects.OBJECTS[l]].length) 
 						continue;
 
 					const tag = states[SMAObjects.OBJECTS[l]][0].tag;
-					if( tag ) {
+					if( states[SMAObjects.OBJECTS[l]][0].hasOwnProperty("tag") ) {
 						if( D2PConst[tag]) {
 							states[SMAObjects.OBJECTS[l]] = D2PConst[tag].toString();
 						}
